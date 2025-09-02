@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator - JobUtilities</title>
+    <link rel="stylesheet" href="../styles/utility-base.css">
+    <link rel="stylesheet" href="../styles/qr-generator.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo">
+                    <i class="fas fa-tools"></i>
+                    <span>JobUtilities</span>
+                </a>
+                <div class="nav-title">
+                    <i class="fas fa-qrcode"></i>
+                    <h1>QR Code Generator</h1>
+                </div>
+                <a href="../index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="tool-header">
+                <h2>Smart QR Code Generator</h2>
+                <p>Create custom QR codes for any content • Beautiful designs with logo support</p>
+            </div>
+
+            <div class="generator-layout">
+                <div class="input-section">
+                    <div class="content-section">
+                        <h3><i class="fas fa-edit"></i> Content Type</h3>
+                        <div class="type-selector">
+                            <button class="type-btn active" data-type="text">
+                                <i class="fas fa-font"></i>
+                                <span>Text</span>
+                            </button>
+                            <button class="type-btn" data-type="url">
+                                <i class="fas fa-link"></i>
+                                <span>URL</span>
+                            </button>
+                            <button class="type-btn" data-type="wifi">
+                                <i class="fas fa-wifi"></i>
+                                <span>WiFi</span>
+                            </button>
+                            <button class="type-btn" data-type="contact">
+                                <i class="fas fa-user"></i>
+                                <span>Contact</span>
+                            </button>
+                            <button class="type-btn" data-type="email">
+                                <i class="fas fa-envelope"></i>
+                                <span>Email</span>
+                            </button>
+                            <button class="type-btn" data-type="phone">
+                                <i class="fas fa-phone"></i>
+                                <span>Phone</span>
+                            </button>
+                            <button class="type-btn" data-type="sms">
+                                <i class="fas fa-sms"></i>
+                                <span>SMS</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Text Input -->
+                    <div class="input-form active" id="text-form">
+                        <h3><i class="fas fa-keyboard"></i> Text Content</h3>
+                        <textarea id="textContent" placeholder="Enter your text here..."></textarea>
+                    </div>
+
+                    <!-- URL Input -->
+                    <div class="input-form" id="url-form">
+                        <h3><i class="fas fa-globe"></i> URL</h3>
+                        <input type="url" id="urlContent" placeholder="https://example.com">
+                    </div>
+
+                    <!-- WiFi Input -->
+                    <div class="input-form" id="wifi-form">
+                        <h3><i class="fas fa-wifi"></i> WiFi Network</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="wifiSSID">Network Name (SSID)</label>
+                                <input type="text" id="wifiSSID" placeholder="My WiFi Network">
+                            </div>
+                            <div class="form-group">
+                                <label for="wifiPassword">Password</label>
+                                <input type="password" id="wifiPassword" placeholder="Password">
+                            </div>
+                            <div class="form-group">
+                                <label for="wifiSecurity">Security Type</label>
+                                <select id="wifiSecurity">
+                                    <option value="WPA">WPA/WPA2</option>
+                                    <option value="WEP">WEP</option>
+                                    <option value="nopass">No Password</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>
+                                    <input type="checkbox" id="wifiHidden"> Hidden Network
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Input -->
+                    <div class="input-form" id="contact-form">
+                        <h3><i class="fas fa-address-card"></i> Contact Information</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="contactName">Full Name</label>
+                                <input type="text" id="contactName" placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label for="contactPhone">Phone</label>
+                                <input type="tel" id="contactPhone" placeholder="+1234567890">
+                            </div>
+                            <div class="form-group">
+                                <label for="contactEmail">Email</label>
+                                <input type="email" id="contactEmail" placeholder="john@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="contactOrg">Organization</label>
+                                <input type="text" id="contactOrg" placeholder="Company Name">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="contactAddress">Address</label>
+                                <textarea id="contactAddress" placeholder="123 Main St, City, Country"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Input -->
+                    <div class="input-form" id="email-form">
+                        <h3><i class="fas fa-envelope"></i> Email</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="emailTo">To</label>
+                                <input type="email" id="emailTo" placeholder="recipient@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="emailSubject">Subject</label>
+                                <input type="text" id="emailSubject" placeholder="Email subject">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="emailBody">Message</label>
+                                <textarea id="emailBody" placeholder="Email message..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phone Input -->
+                    <div class="input-form" id="phone-form">
+                        <h3><i class="fas fa-phone"></i> Phone Number</h3>
+                        <input type="tel" id="phoneNumber" placeholder="+1234567890">
+                    </div>
+
+                    <!-- SMS Input -->
+                    <div class="input-form" id="sms-form">
+                        <h3><i class="fas fa-comment"></i> SMS Message</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="smsNumber">Phone Number</label>
+                                <input type="tel" id="smsNumber" placeholder="+1234567890">
+                            </div>
+                            <div class="form-group full-width">
+                                <label for="smsMessage">Message</label>
+                                <textarea id="smsMessage" placeholder="SMS message..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Customization Options -->
+                    <div class="customization-section">
+                        <h3><i class="fas fa-palette"></i> Customization</h3>
+                        <div class="custom-grid">
+                            <div class="custom-group">
+                                <label for="qrSize">Size (px)</label>
+                                <input type="range" id="qrSize" min="128" max="512" value="256">
+                                <span id="sizeValue">256px</span>
+                            </div>
+                            <div class="custom-group">
+                                <label for="foregroundColor">Foreground Color</label>
+                                <input type="color" id="foregroundColor" value="#000000">
+                            </div>
+                            <div class="custom-group">
+                                <label for="backgroundColor">Background Color</label>
+                                <input type="color" id="backgroundColor" value="#ffffff">
+                            </div>
+                            <div class="custom-group">
+                                <label for="errorCorrection">Error Correction</label>
+                                <select id="errorCorrection">
+                                    <option value="L">Low (7%)</option>
+                                    <option value="M" selected>Medium (15%)</option>
+                                    <option value="Q">Quartile (25%)</option>
+                                    <option value="H">High (30%)</option>
+                                </select>
+                            </div>
+                            <div class="custom-group">
+                                <label for="logoUpload">Logo (optional)</label>
+                                <input type="file" id="logoUpload" accept="image/*">
+                            </div>
+                            <div class="custom-group">
+                                <label for="logoSize">Logo Size</label>
+                                <input type="range" id="logoSize" min="10" max="30" value="20" disabled>
+                                <span id="logoSizeValue">20%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn primary" id="generateBtn">
+                            <i class="fas fa-magic"></i> Generate QR Code
+                        </button>
+                        <button class="btn secondary" id="clearBtn">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="preview-section">
+                    <div class="preview-card">
+                        <h3><i class="fas fa-eye"></i> Preview</h3>
+                        <div class="qr-preview" id="qrPreview">
+                            <div class="placeholder">
+                                <i class="fas fa-qrcode"></i>
+                                <p>Your QR code will appear here</p>
+                            </div>
+                        </div>
+                        <div class="download-options" id="downloadOptions" style="display: none;">
+                            <button class="download-btn" id="downloadPNG">
+                                <i class="fas fa-download"></i> Download PNG
+                            </button>
+                            <button class="download-btn" id="downloadSVG">
+                                <i class="fas fa-download"></i> Download SVG
+                            </button>
+                            <button class="download-btn" id="downloadJPG">
+                                <i class="fas fa-download"></i> Download JPG
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h3><i class="fas fa-info-circle"></i> QR Code Tips</h3>
+                        <div class="tips-list">
+                            <div class="tip-item">
+                                <i class="fas fa-lightbulb"></i>
+                                <div>
+                                    <h4>Error Correction</h4>
+                                    <p>Higher levels allow the QR code to be read even if partially damaged or obscured.</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-palette"></i>
+                                <div>
+                                    <h4>Color Contrast</h4>
+                                    <p>Ensure good contrast between foreground and background for reliable scanning.</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-mobile-alt"></i>
+                                <div>
+                                    <h4>Size Matters</h4>
+                                    <p>Larger QR codes are easier to scan from a distance. Minimum 2cm for print.</p>
+                                </div>
+                            </div>
+                            <div class="tip-item">
+                                <i class="fas fa-image"></i>
+                                <div>
+                                    <h4>Logo Guidelines</h4>
+                                    <p>Keep logos small (under 30%) and use high error correction when adding logos.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Generating QR code...</p>
+        </div>
+    </div>
+
+    <script src="../scripts/qrcode-simple.js"></script>
+    <script src="../scripts/qr-generator.js"></script>
+</body>
+</html>

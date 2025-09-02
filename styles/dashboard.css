@@ -189,6 +189,10 @@ body {
     background: linear-gradient(135deg, #f093fb, #f5576c);
 }
 
+.qr-icon {
+    background: linear-gradient(135deg, #9f7aea, #805ad5);
+}
+
 .video-icon {
     background: linear-gradient(135deg, #4facfe, #00f2fe);
 }
