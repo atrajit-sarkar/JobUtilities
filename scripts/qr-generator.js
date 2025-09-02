@@ -247,6 +247,10 @@ class QRGenerator {
             return;
         }
 
+        console.log('Generating QR for content:', content);
+        console.log('Content type:', this.currentType);
+        console.log('Content length:', content.length);
+
         this.showLoading(true);
 
         try {
@@ -269,9 +273,13 @@ class QRGenerator {
                 margin: 2
             };
 
+            console.log('QR options:', options);
+
             // Generate QR code
             const canvas = document.createElement('canvas');
             await window.QRCode.toCanvas(canvas, content, options);
+
+            console.log('QR code generated successfully');
 
             // Add logo if provided
             if (this.logoImage) {
@@ -284,6 +292,7 @@ class QRGenerator {
 
         } catch (error) {
             console.error('Error generating QR code:', error);
+            console.error('Error details:', error.stack);
             alert('Error generating QR code. Please check your input and network connection.');
         } finally {
             this.showLoading(false);

@@ -643,31 +643,67 @@
     }
     
     QRRSBlock.RS_BLOCK_TABLE = [
-        // L, M, Q, H
+        // L, M, Q, H for each version 1-10
+        
+        // Version 1
         [1, 26, 19],
         [1, 26, 16],
         [1, 26, 13],
         [1, 26, 9],
         
+        // Version 2
         [1, 44, 34],
         [1, 44, 28],
         [1, 44, 22],
         [1, 44, 16],
         
+        // Version 3
         [1, 70, 55],
         [1, 70, 44],
         [2, 35, 17],
         [2, 35, 13],
         
+        // Version 4
         [1, 100, 80],
         [2, 50, 32],
         [2, 50, 24],
         [4, 25, 9],
         
+        // Version 5
         [1, 134, 108],
         [2, 67, 43],
         [2, 33, 15, 2, 34, 16],
-        [2, 33, 11, 2, 34, 12]
+        [2, 33, 11, 2, 34, 12],
+        
+        // Version 6
+        [2, 86, 68],
+        [4, 43, 27],
+        [4, 43, 19],
+        [4, 43, 15],
+        
+        // Version 7
+        [2, 98, 78],
+        [4, 49, 31],
+        [2, 32, 14, 4, 33, 15],
+        [4, 39, 13, 1, 40, 14],
+        
+        // Version 8
+        [2, 121, 97],
+        [2, 60, 38, 2, 61, 39],
+        [4, 40, 18, 2, 41, 19],
+        [4, 40, 14, 2, 41, 15],
+        
+        // Version 9
+        [2, 146, 116],
+        [3, 58, 36, 2, 59, 37],
+        [4, 36, 16, 4, 37, 17],
+        [4, 36, 12, 4, 37, 13],
+        
+        // Version 10
+        [2, 86, 68, 2, 87, 69],
+        [4, 69, 43, 1, 70, 44],
+        [6, 43, 19, 2, 44, 20],
+        [6, 43, 15, 2, 44, 16]
     ];
     
     QRRSBlock.getRSBlocks = function(typeNumber, errorCorrectLevel) {
@@ -708,6 +744,20 @@
         }
     };
     
+    // Helper function to determine optimal QR type based on data length
+    function getOptimalType(dataLength) {
+        if (dataLength <= 14) return 1;
+        if (dataLength <= 26) return 2;
+        if (dataLength <= 42) return 3;
+        if (dataLength <= 62) return 4;
+        if (dataLength <= 84) return 5;
+        if (dataLength <= 106) return 6;
+        if (dataLength <= 122) return 7;
+        if (dataLength <= 152) return 8;
+        if (dataLength <= 180) return 9;
+        return 10; // Max supported
+    }
+    
     // Main QRCode API
     window.QRCode = {
         toCanvas: function(canvas, text, options) {
@@ -717,10 +767,18 @@
                     const margin = options.margin || 2;
                     const dark = options.color?.dark || '#000000';
                     const light = options.color?.light || '#ffffff';
-                    const errorCorrectLevel = options.errorCorrectionLevel || 'M';
+                    let errorCorrectLevel = options.errorCorrectionLevel || 'M';
                     
-                    // Create QR code
-                    const qr = new QR(4, errorCorrectLevel);
+                    // Convert error correction level to number
+                    if (typeof errorCorrectLevel === 'string') {
+                        errorCorrectLevel = QRErrorCorrectLevel[errorCorrectLevel] || QRErrorCorrectLevel.M;
+                    }
+                    
+                    // Determine optimal type based on data length
+                    const optimalType = getOptimalType(text.length);
+                    
+                    // Create QR code with optimal type
+                    const qr = new QR(optimalType, errorCorrectLevel);
                     qr.addData(text);
                     qr.make();
                     
@@ -764,10 +822,18 @@
                     const size = options.width || 256;
                     const dark = options.color?.dark || '#000000';
                     const light = options.color?.light || '#ffffff';
-                    const errorCorrectLevel = options.errorCorrectionLevel || 'M';
+                    let errorCorrectLevel = options.errorCorrectionLevel || 'M';
                     
-                    // Create QR code
-                    const qr = new QR(4, errorCorrectLevel);
+                    // Convert error correction level to number
+                    if (typeof errorCorrectLevel === 'string') {
+                        errorCorrectLevel = QRErrorCorrectLevel[errorCorrectLevel] || QRErrorCorrectLevel.M;
+                    }
+                    
+                    // Determine optimal type based on data length
+                    const optimalType = getOptimalType(text.length);
+                    
+                    // Create QR code with optimal type
+                    const qr = new QR(optimalType, errorCorrectLevel);
                     qr.addData(text);
                     qr.make();
                     
