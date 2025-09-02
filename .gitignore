@@ -1,0 +1,57 @@
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python files (legacy)
+*.py
+*.pyc
+__pycache__/
+requirements.txt
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Log files
+*.log
+
+# Node modules (if using any build tools later)
+node_modules/
+
+# Test files and compressed outputs (development only)
+test-*
+*-compressed.*
+sample-*
+
+# Large test files
+*.pdf
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.gif
+*.bmp
+*.tiff
+
+# But keep small demo files if needed
+!demo-*.jpg
+!demo-*.png
+!demo-*.pdf

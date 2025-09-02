@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Compressor - JobUtilities</title>
+    <link rel="stylesheet" href="../styles/utility-base.css">
+    <link rel="stylesheet" href="../styles/image-compressor.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo">
+                    <i class="fas fa-tools"></i>
+                    <span>JobUtilities</span>
+                </a>
+                <div class="nav-title">
+                    <i class="fas fa-images"></i>
+                    <h1>Image Compressor</h1>
+                </div>
+                <a href="../index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="tool-header">
+                <h2>Smart Image Compression</h2>
+                <p>Compress images without losing dimensions • Keep quality, reduce file size</p>
+            </div>
+
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Drop your images here or click to browse</h3>
+                        <p>Supports JPEG, PNG, WebP • Max 10MB per file</p>
+                        <input type="file" id="fileInput" accept="image/*" multiple>
+                        <button class="browse-btn">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section" id="controlsSection" style="display: none;">
+                <div class="control-group">
+                    <h3><i class="fas fa-sliders-h"></i> Compression Settings</h3>
+                    <div class="controls-grid">
+                        <div class="control-item">
+                            <label for="compressionMode">Mode:</label>
+                            <select id="compressionMode">
+                                <option value="quality">Quality Based</option>
+                                <option value="size">Target Size</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-item" id="qualityControl">
+                            <label for="quality">Quality: <span id="qualityValue">80</span>%</label>
+                            <input type="range" id="quality" min="10" max="100" value="80">
+                        </div>
+                        
+                        <div class="control-item" id="sizeControl" style="display: none;">
+                            <label for="targetSize">Target Size (KB):</label>
+                            <input type="number" id="targetSize" min="10" placeholder="e.g., 500">
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="format">Output Format:</label>
+                            <select id="format">
+                                <option value="auto">Keep Original</option>
+                                <option value="jpeg">JPEG</option>
+                                <option value="webp">WebP (Best Compression)</option>
+                                <option value="png">PNG</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label>
+                                <input type="checkbox" id="preserveMetadata"> Preserve Metadata
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn primary" id="compressBtn">
+                            <i class="fas fa-compress"></i> Compress Images
+                        </button>
+                        <button class="btn secondary" id="downloadAllBtn" style="display: none;">
+                            <i class="fas fa-download"></i> Download All
+                        </button>
+                        <button class="btn secondary" id="clearBtn">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section" id="resultsSection" style="display: none;">
+                <h3><i class="fas fa-chart-line"></i> Compression Results</h3>
+                <div class="results-grid" id="resultsGrid"></div>
+            </div>
+        </main>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Compressing images...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="../scripts/image-compressor.js"></script>
+</body>
+</html>

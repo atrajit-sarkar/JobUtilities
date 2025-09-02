@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Compressor - JobUtilities</title>
+    <link rel="stylesheet" href="../styles/utility-base.css">
+    <link rel="stylesheet" href="../styles/pdf-compressor.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo">
+                    <i class="fas fa-tools"></i>
+                    <span>JobUtilities</span>
+                </a>
+                <div class="nav-title">
+                    <i class="fas fa-file-pdf"></i>
+                    <h1>PDF Compressor</h1>
+                </div>
+                <a href="../index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="tool-header">
+                <h2>Smart PDF Compression</h2>
+                <p>Reduce PDF file sizes while maintaining readability • Perfect for sharing and storage</p>
+            </div>
+
+            <div class="upload-section content-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-file-pdf"></i>
+                        <h3>Drop your PDF files here or click to browse</h3>
+                        <p>Supports PDF files • Max 50MB per file</p>
+                        <input type="file" id="fileInput" accept=".pdf,application/pdf" multiple>
+                        <button class="browse-btn">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section content-section" id="controlsSection" style="display: none;">
+                <div class="control-group">
+                    <h3><i class="fas fa-sliders-h"></i> Compression Settings</h3>
+                    <div class="controls-grid">
+                        <div class="control-item">
+                            <label for="compressionMode">Mode:</label>
+                            <select id="compressionMode">
+                                <option value="quality" selected>Quality Based</option>
+                                <option value="size">Target Size</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="compressionLevel">Compression Level:</label>
+                            <select id="compressionLevel">
+                                <option value="low">Low (Highest Quality)</option>
+                                <option value="medium" selected>Medium (Balanced)</option>
+                                <option value="high">High (Smallest Size)</option>
+                                <option value="extreme">Extreme (Maximum Compression)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="imageQuality">Image Quality: <span id="imageQualityValue">75</span>%</label>
+                            <input type="range" id="imageQuality" min="20" max="100" value="75">
+                        </div>
+                        
+                        <div class="control-item" id="sizeControl" style="display: none;">
+                            <label for="targetSize">Target Size (KB):</label>
+                            <input type="number" id="targetSize" min="50" placeholder="e.g., 1200">
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="dpi">Target DPI:</label>
+                            <select id="dpi">
+                                <option value="300">300 DPI (Print Quality)</option>
+                                <option value="150" selected>150 DPI (Web/Email)</option>
+                                <option value="100">100 DPI (Smallest Size)</option>
+                                <option value="72">72 DPI (Screen Only)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label>
+                                <input type="checkbox" id="removeMetadata" checked> Remove Metadata
+                            </label>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label>
+                                <input type="checkbox" id="optimizeFonts" checked> Optimize Fonts
+                            </label>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label>
+                                <input type="checkbox" id="compressImages" checked> Compress Images
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn primary" id="compressBtn">
+                            <i class="fas fa-compress"></i> Compress PDFs
+                        </button>
+                        <button class="btn secondary" id="downloadAllBtn" style="display: none;">
+                            <i class="fas fa-download"></i> Download All
+                        </button>
+                        <button class="btn secondary" id="clearBtn">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section content-section" id="resultsSection" style="display: none;">
+                <h3><i class="fas fa-chart-line"></i> Compression Results</h3>
+                <div class="results-grid" id="resultsGrid"></div>
+            </div>
+
+            <div class="info-section content-section">
+                <h3><i class="fas fa-info-circle"></i> PDF Compression Tips</h3>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <i class="fas fa-image"></i>
+                        <h4>Image-Heavy PDFs</h4>
+                        <p>For PDFs with many images, use High or Extreme compression with lower DPI settings for maximum size reduction.</p>
+                    </div>
+                    <div class="tip-card">
+                        <i class="fas fa-file-alt"></i>
+                        <h4>Text Documents</h4>
+                        <p>Text-based PDFs compress well with Medium compression while maintaining readability.</p>
+                    </div>
+                    <div class="tip-card">
+                        <i class="fas fa-envelope"></i>
+                        <h4>Email Sharing</h4>
+                        <p>Use 150 DPI and Medium compression for the best balance of size and quality for email attachments.</p>
+                    </div>
+                    <div class="tip-card">
+                        <i class="fas fa-print"></i>
+                        <h4>Print Quality</h4>
+                        <p>Keep 300 DPI and Low compression if the PDF will be printed or requires highest quality.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Compressing PDFs...</p>
+            <small>This may take a moment for large files</small>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="../scripts/pdf-compressor.js"></script>
+</body>
+</html>
