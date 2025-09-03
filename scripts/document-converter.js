@@ -3,8 +3,8 @@ class DocumentConverter {
         this.files = [];
         this.convertedFiles = [];
         this.supportedFormats = {
-            input: ['.doc', '.docx', '.pdf', '.txt', '.html', '.htm', '.md', '.rtf'],
-            output: ['pdf', 'docx', 'html', 'md', 'txt', 'rtf']
+            input: ['.doc', '.docx', '.pdf', '.txt', '.html', '.htm', '.md', '.rtf', '.jpg', '.jpeg', '.png'],
+            output: ['pdf', 'docx', 'html', 'md', 'txt', 'rtf', 'jpg', 'png']
         };
         this.initializeElements();
         this.bindEvents();
@@ -87,10 +87,9 @@ class DocumentConverter {
 
     isFileSupported(file) {
         const fileName = file.name.toLowerCase();
-        return this.supportedFormats.input.some(ext => fileName.endsWith(ext)) ||
-               file.type.includes('text') || 
-               file.type.includes('document') ||
-               file.type.includes('pdf');
+        const isExt = this.supportedFormats.input.some(ext => fileName.endsWith(ext));
+        const isMime = /text|document|pdf|image\//i.test(file.type || '');
+        return isExt || isMime;
     }
 
     updateUploadArea() {
@@ -134,7 +133,7 @@ class DocumentConverter {
     }
 
     async convertDocument(file) {
-        const outputFormat = this.outputFormat.value;
+    const outputFormat = this.outputFormat.value;
         const preserveFormatting = this.preserveFormatting.checked;
         const includeImages = this.includeImages.checked;
         
@@ -148,7 +147,12 @@ class DocumentConverter {
             // Convert based on input and output formats
             switch (outputFormat) {
                 case 'pdf':
-                    convertedBlob = await this.convertToPDF(fileContent, fileExtension, file.name);
+                    // If input is image, create a PDF with image pages
+                    if (['.jpg', '.jpeg', '.png'].includes(fileExtension)) {
+                        convertedBlob = await this.convertImageToPDF(fileContent, fileExtension, file.name);
+                    } else {
+                        convertedBlob = await this.convertToPDF(fileContent, fileExtension, file.name);
+                    }
                     break;
                 case 'html':
                     convertedBlob = await this.convertToHTML(fileContent, fileExtension);
@@ -164,6 +168,21 @@ class DocumentConverter {
                     break;
                 case 'rtf':
                     convertedBlob = await this.convertToRTF(fileContent, fileExtension);
+                    break;
+                case 'jpg':
+                case 'png':
+                    // If input is PDF, render pages to images; if input is HTML/MD/TXT/DOCX, rasterize
+                    if (fileExtension === '.pdf') {
+                        convertedBlob = await this.convertPDFToImages(fileContent, outputFormat);
+                    } else if (['.html', '.htm', '.md', '.txt', '.docx'].includes(fileExtension)) {
+                        // Render text/HTML to an image canvas and export
+                        convertedBlob = await this.rasterizeDocumentToImage(fileContent, fileExtension, outputFormat);
+                    } else if (['.jpg', '.jpeg', '.png'].includes(fileExtension)) {
+                        // Already an image: if same format, just return original; else transcode
+                        convertedBlob = await this.transcodeImage(fileContent, outputFormat);
+                    } else {
+                        throw new Error('Unsupported input for image output');
+                    }
                     break;
                 default:
                     throw new Error(`Unsupported output format: ${outputFormat}`);
@@ -203,7 +222,7 @@ class DocumentConverter {
             reader.onerror = () => reject(new Error('Failed to read file'));
             
             // Read as text for most formats, as array buffer for binary formats
-            if (['.pdf', '.doc', '.docx'].includes(extension)) {
+            if (['.pdf', '.doc', '.docx', '.jpg', '.jpeg', '.png'].includes(extension)) {
                 reader.readAsArrayBuffer(file);
             } else {
                 reader.readAsText(file);
@@ -261,6 +280,132 @@ class DocumentConverter {
         });
         
         return new Blob([pdf.output('blob')], { type: 'application/pdf' });
+    }
+
+    // New: Image (JPG/PNG) -> PDF
+    async convertImageToPDF(arrayBuffer, inputFormat, originalName) {
+        const { jsPDF } = window.jspdf;
+        const img = await this.arrayBufferToImage(arrayBuffer);
+        const orientation = img.width >= img.height ? 'l' : 'p';
+        const pdf = new jsPDF({ orientation, unit: 'pt', format: [img.width, img.height] });
+        const mime = inputFormat === '.png' ? 'image/png' : 'image/jpeg';
+        const dataUrl = await this.imageToDataURL(img, mime);
+        pdf.addImage(dataUrl, (mime === 'image/png') ? 'PNG' : 'JPEG', 0, 0, img.width, img.height, undefined, 'FAST');
+        return pdf.output('blob');
+    }
+
+    // New: PDF -> JPG/PNG (first page or all pages zipped if multi-page)
+    async convertPDFToImages(arrayBuffer, outFormat) {
+        const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+        if (!pdfjsLib) throw new Error('PDF.js not available');
+        if (pdfjsLib.GlobalWorkerOptions) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
+        }
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf = await loadingTask.promise;
+        const pageCount = pdf.numPages;
+
+        // Render pages to images
+        const images = [];
+        for (let p = 1; p <= pageCount; p++) {
+            const page = await pdf.getPage(p);
+            const viewport = page.getViewport({ scale: 2.0 });
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            await page.render({ canvasContext: ctx, viewport }).promise;
+            const blob = await new Promise((res) => canvas.toBlob(res, outFormat === 'png' ? 'image/png' : 'image/jpeg', outFormat === 'png' ? 1.0 : 0.92));
+            images.push({ index: p, blob });
+        }
+        if (images.length === 1) return images[0].blob;
+        // Zip if multiple pages
+        if (typeof JSZip === 'undefined') throw new Error('Multi-page image output requires JSZip');
+        const zip = new JSZip();
+        const folder = zip.folder('pdf-pages');
+        await Promise.all(images.map(async (img) => {
+            const buf = await img.blob.arrayBuffer();
+            folder.file(`page-${img.index}.${outFormat}`, buf);
+        }));
+        return zip.generateAsync({ type: 'blob' });
+    }
+
+    // New: Transcode image to desired format
+    async transcodeImage(arrayBuffer, outFormat) {
+        const img = await this.arrayBufferToImage(arrayBuffer);
+        return await new Promise((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            canvas.toBlob((blob) => blob ? resolve(blob) : reject(new Error('Failed to transcode image')), outFormat === 'png' ? 'image/png' : 'image/jpeg', outFormat === 'png' ? 1.0 : 0.92);
+        });
+    }
+
+    // New: Rasterize document-like content to an image (basic)
+    async rasterizeDocumentToImage(content, inputFormat, outFormat) {
+        const width = 1200, height = 1600;
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = '#111827';
+        ctx.font = '20px Inter, Arial, sans-serif';
+        ctx.textBaseline = 'top';
+        const text = await (async () => {
+            if (inputFormat === '.docx' && window.mammoth) {
+                try { const r = await mammoth.extractRawText({ arrayBuffer: content }); return r.value; } catch { return '[Error reading document]'; }
+            }
+            if (inputFormat === '.html' || inputFormat === '.htm') {
+                const div = document.createElement('div'); div.innerHTML = content; return div.textContent || div.innerText || '';
+            }
+            if (inputFormat === '.md') { return (typeof content === 'string' ? content : '').replace(/[#*`_~]/g, ''); }
+            return (typeof content === 'string' ? content : '[Binary content]');
+        })();
+        // Simple word wrap
+        const margin = 60, lineHeight = 28, maxWidth = width - margin * 2;
+        const words = text.split(/\s+/);
+        let x = margin, y = margin, line = '';
+        for (const w of words) {
+            const test = line + w + ' ';
+            const m = ctx.measureText(test);
+            if (m.width > maxWidth) {
+                ctx.fillText(line, x, y);
+                y += lineHeight;
+                if (y > height - margin) break;
+                line = w + ' ';
+            } else {
+                line = test;
+            }
+        }
+        if (y <= height - margin) ctx.fillText(line.trim(), x, y);
+        return await new Promise((resolve) => canvas.toBlob((b) => resolve(b), outFormat === 'png' ? 'image/png' : 'image/jpeg', outFormat === 'png' ? 1.0 : 0.92));
+    }
+
+    async arrayBufferToImage(arrayBuffer) {
+        const blob = new Blob([arrayBuffer]);
+        const url = URL.createObjectURL(blob);
+        try {
+            const img = new Image();
+            img.decoding = 'async';
+            await new Promise((res, rej) => { img.onload = () => res(); img.onerror = rej; img.src = url; });
+            return img;
+        } finally {
+            // Do not revoke immediately; image might still be used for toDataURL
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+    }
+
+    async imageToDataURL(img, mime) {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        return canvas.toDataURL(mime);
     }
 
     async convertToHTML(content, inputFormat) {
@@ -426,11 +571,19 @@ class DocumentConverter {
         const statusClass = result.status === 'success' ? 'status-success' : 'status-error';
         const statusIcon = result.status === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
         const statusText = result.status === 'success' ? 'Converted Successfully' : 'Conversion Failed';
+        const formatIcon = (fmt => {
+            if (fmt === 'pdf') return 'fa-file-pdf';
+            if (fmt === 'docx' || fmt === 'rtf') return 'fa-file-word';
+            if (fmt === 'html') return 'fa-code';
+            if (fmt === 'md' || fmt === 'txt') return 'fa-file-alt';
+            if (fmt === 'jpg' || fmt === 'png') return 'fa-image';
+            return 'fa-file';
+        })(result.outputFormat);
 
         card.innerHTML = `
             <div class="result-header">
                 <div class="result-icon">
-                    <i class="fas fa-file-alt"></i>
+                    <i class="fas ${formatIcon}"></i>
                 </div>
                 <div class="result-info">
                     <h4>${result.original.name}</h4>

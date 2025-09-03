@@ -45,7 +45,7 @@
                         <i class="fas fa-file-alt"></i>
                         <h3>Drop your documents here or click to browse</h3>
                         <p>Supports Word, PDF, TXT, HTML, Markdown • Max 25MB per file</p>
-                        <input type="file" id="fileInput" accept=".doc,.docx,.pdf,.txt,.html,.htm,.md,.rtf" multiple>
+                        <input type="file" id="fileInput" accept=".doc,.docx,.pdf,.txt,.html,.htm,.md,.rtf,.jpg,.jpeg,.png,image/*" multiple>
                         <button class="browse-btn">
                             <i class="fas fa-folder-open"></i> Browse Files
                         </button>
@@ -66,6 +66,8 @@
                                 <option value="md">Markdown</option>
                                 <option value="txt">Plain Text</option>
                                 <option value="rtf">Rich Text Format</option>
+                                <option value="jpg">JPEG Image (.jpg)</option>
+                                <option value="png">PNG Image (.png)</option>
                             </select>
                         </div>
                         
@@ -149,6 +151,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- PDF.js for rendering PDF pages to images -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.2/turndown.min.js"></script>
     <script src="../scripts/document-converter.js"></script>
