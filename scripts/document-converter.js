@@ -313,8 +313,7 @@ class DocumentConverter {
 
     // New: PDF -> JPG/PNG (first page or all pages zipped if multi-page)
     async convertPDFToImages(arrayBuffer, outFormat) {
-        const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
-        if (!pdfjsLib) throw new Error('PDF.js not available');
+        const pdfjsLib = await this.ensurePdfJs();
         if (pdfjsLib.GlobalWorkerOptions) {
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
         }
@@ -337,7 +336,10 @@ class DocumentConverter {
         }
                 if (images.length === 1) return { blob: images[0].blob, isZip: false, pageCount };
         // Zip if multiple pages
-                if (typeof JSZip === 'undefined') throw new Error('Multi-page image output requires JSZip');
+        if (typeof JSZip === 'undefined') {
+            // Graceful fallback: return only the first page image
+            return { blob: images[0].blob, isZip: false, pageCount };
+        }
         const zip = new JSZip();
         const folder = zip.folder('pdf-pages');
         await Promise.all(images.map(async (img) => {
@@ -350,11 +352,10 @@ class DocumentConverter {
 
         // New: PDF -> HTML (image-based pages for fidelity)
         async convertPDFToHTML(arrayBuffer, originalName) {
-                const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
-                if (!pdfjsLib) throw new Error('PDF.js not available');
-                if (pdfjsLib.GlobalWorkerOptions) {
-                        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
-                }
+            const pdfjsLib = await this.ensurePdfJs();
+            if (pdfjsLib.GlobalWorkerOptions) {
+                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
+            }
                 const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
                 const pdf = await loadingTask.promise;
                 const pageImgs = [];
@@ -387,6 +388,31 @@ class DocumentConverter {
 </html>`;
                 return new Blob([html], { type: 'text/html' });
         }
+
+            // Ensure PDF.js is available; dynamically load from CDN if missing
+            async ensurePdfJs() {
+                let lib = window.pdfjsLib || (window['pdfjs-dist/build/pdf']);
+                if (lib) return lib;
+                // Load script dynamically
+                await new Promise((resolve, reject) => {
+                    const existing = document.querySelector('script[data-pdfjs]');
+                    if (existing) {
+                        existing.addEventListener('load', resolve);
+                        existing.addEventListener('error', () => reject(new Error('Failed to load PDF.js')));
+                        return;
+                    }
+                    const s = document.createElement('script');
+                    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.min.js';
+                    s.async = true;
+                    s.setAttribute('data-pdfjs', '1');
+                    s.onload = resolve;
+                    s.onerror = () => reject(new Error('Failed to load PDF.js'));
+                    document.head.appendChild(s);
+                });
+                lib = window.pdfjsLib || (window['pdfjs-dist/build/pdf']);
+                if (!lib) throw new Error('PDF.js not available');
+                return lib;
+            }
 
     // New: Transcode image to desired format
     async transcodeImage(arrayBuffer, outFormat) {
