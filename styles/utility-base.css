@@ -265,4 +265,12 @@ body {
     .content-section {
         padding: 25px 20px;
     }
+    
+    .nav-logo .logo-text {
+        display: none;
+    }
+    
+    .back-btn span:not(.fas) {
+        display: none;
+    }
 }
