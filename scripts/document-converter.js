@@ -155,7 +155,11 @@ class DocumentConverter {
                     }
                     break;
                 case 'html':
-                    convertedBlob = await this.convertToHTML(fileContent, fileExtension);
+                    if (fileExtension === '.pdf') {
+                        convertedBlob = await this.convertPDFToHTML(fileContent, file.name);
+                    } else {
+                        convertedBlob = await this.convertToHTML(fileContent, fileExtension);
+                    }
                     break;
                 case 'md':
                     convertedBlob = await this.convertToMarkdown(fileContent, fileExtension);
@@ -173,7 +177,20 @@ class DocumentConverter {
                 case 'png':
                     // If input is PDF, render pages to images; if input is HTML/MD/TXT/DOCX, rasterize
                     if (fileExtension === '.pdf') {
-                        convertedBlob = await this.convertPDFToImages(fileContent, outputFormat);
+                        const imgResult = await this.convertPDFToImages(fileContent, outputFormat);
+                        // If multiple pages, mark as zip in metadata
+                        if (imgResult.isZip) {
+                            return {
+                                original: file,
+                                converted: imgResult.blob,
+                                outputFormat: 'zip',
+                                status: 'success',
+                                originalSize: file.size,
+                                convertedSize: imgResult.blob.size,
+                                meta: { kind: 'pdf-pages-images', pageCount: imgResult.pageCount, imageFormat: outputFormat }
+                            };
+                        }
+                        convertedBlob = imgResult.blob;
                     } else if (['.html', '.htm', '.md', '.txt', '.docx'].includes(fileExtension)) {
                         // Render text/HTML to an image canvas and export
                         convertedBlob = await this.rasterizeDocumentToImage(fileContent, fileExtension, outputFormat);
@@ -318,17 +335,58 @@ class DocumentConverter {
             const blob = await new Promise((res) => canvas.toBlob(res, outFormat === 'png' ? 'image/png' : 'image/jpeg', outFormat === 'png' ? 1.0 : 0.92));
             images.push({ index: p, blob });
         }
-        if (images.length === 1) return images[0].blob;
+                if (images.length === 1) return { blob: images[0].blob, isZip: false, pageCount };
         // Zip if multiple pages
-        if (typeof JSZip === 'undefined') throw new Error('Multi-page image output requires JSZip');
+                if (typeof JSZip === 'undefined') throw new Error('Multi-page image output requires JSZip');
         const zip = new JSZip();
         const folder = zip.folder('pdf-pages');
         await Promise.all(images.map(async (img) => {
             const buf = await img.blob.arrayBuffer();
             folder.file(`page-${img.index}.${outFormat}`, buf);
         }));
-        return zip.generateAsync({ type: 'blob' });
+                const blob = await zip.generateAsync({ type: 'blob' });
+                return { blob, isZip: true, pageCount };
     }
+
+        // New: PDF -> HTML (image-based pages for fidelity)
+        async convertPDFToHTML(arrayBuffer, originalName) {
+                const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+                if (!pdfjsLib) throw new Error('PDF.js not available');
+                if (pdfjsLib.GlobalWorkerOptions) {
+                        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.5.136/pdf.worker.min.js';
+                }
+                const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+                const pdf = await loadingTask.promise;
+                const pageImgs = [];
+                for (let p = 1; p <= pdf.numPages; p++) {
+                        const page = await pdf.getPage(p);
+                        const viewport = page.getViewport({ scale: 2.0 });
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        await page.render({ canvasContext: ctx, viewport }).promise;
+                        const dataUrl = canvas.toDataURL('image/png');
+                        pageImgs.push({ index: p, dataUrl, width: viewport.width, height: viewport.height });
+                }
+                const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${this.escapeHtml(originalName)} - Converted</title>
+    <style>
+        body { margin: 0; background: #f3f4f6; font-family: Arial, sans-serif; }
+        .page { max-width: 1000px; margin: 20px auto; box-shadow: 0 6px 24px rgba(0,0,0,0.12); background: #fff; border-radius: 8px; overflow: hidden; }
+        .page img { display: block; width: 100%; height: auto; }
+    </style>
+    </head>
+<body>
+    ${pageImgs.map(p => `<div class="page"><img src="${p.dataUrl}" alt="Page ${p.index}"/></div>`).join('\n')}
+</body>
+</html>`;
+                return new Blob([html], { type: 'text/html' });
+        }
 
     // New: Transcode image to desired format
     async transcodeImage(arrayBuffer, outFormat) {
@@ -623,12 +681,15 @@ class DocumentConverter {
 
         const link = document.createElement('a');
         link.href = URL.createObjectURL(result.converted);
-        
+
         const originalName = result.original.name;
-        const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
-        const extension = this.getExtensionForFormat(result.outputFormat);
-        
-        link.download = `${nameWithoutExt}-converted.${extension}`;
+        const nameWithoutExt = originalName.includes('.') ? originalName.substring(0, originalName.lastIndexOf('.')) : originalName;
+        let extension = this.getExtensionForFormat(result.outputFormat);
+        let filename = `${nameWithoutExt}-converted.${extension}`;
+        if (result.outputFormat === 'zip' && result.meta && result.meta.kind === 'pdf-pages-images') {
+            filename = `${nameWithoutExt}-pages-${result.meta.pageCount}-${result.meta.imageFormat}.zip`;
+        }
+        link.download = filename;
         link.click();
     }
 
@@ -639,7 +700,10 @@ class DocumentConverter {
             'html': 'html',
             'md': 'md',
             'txt': 'txt',
-            'rtf': 'rtf'
+            'rtf': 'rtf',
+            'jpg': 'jpg',
+            'png': 'png',
+            'zip': 'zip'
         };
         return extensions[format] || format;
     }
@@ -666,9 +730,13 @@ class DocumentConverter {
         
         const addFilePromises = successfulConversions.map((result) => {
             const originalName = result.original.name;
-            const nameWithoutExt = originalName.substring(0, originalName.lastIndexOf('.'));
-            const extension = this.getExtensionForFormat(result.outputFormat);
-            const safeName = this.sanitizeFileName(`${nameWithoutExt}-converted.${extension}`);
+            const nameWithoutExt = originalName.includes('.') ? originalName.substring(0, originalName.lastIndexOf('.')) : originalName;
+            let extension = this.getExtensionForFormat(result.outputFormat);
+            let base = `${nameWithoutExt}-converted`;
+            if (result.outputFormat === 'zip' && result.meta && result.meta.kind === 'pdf-pages-images') {
+                base = `${nameWithoutExt}-pages-${result.meta.pageCount}-${result.meta.imageFormat}`;
+            }
+            const safeName = this.sanitizeFileName(`${base}.${extension}`);
             
             return result.converted.arrayBuffer().then((buf) => {
                 folder.file(safeName, buf);
@@ -687,6 +755,15 @@ class DocumentConverter {
 
     sanitizeFileName(name) {
         return name.replace(/[^a-zA-Z0-9\\-_. ]/g, '_');
+    }
+
+    escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
     clearAll() {
