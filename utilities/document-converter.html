@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Converter - JobUtilities</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link rel="alternate icon" href="../favicon.ico">
+    
+    <link rel="stylesheet" href="../styles/utility-base.css">
+    <link rel="stylesheet" href="../styles/document-converter.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav-bar">
+            <div class="nav-content">
+                <a href="../index.html" class="nav-logo">
+                    <i class="fas fa-tools"></i>
+                    <span class="logo-text">JobUtilities</span>
+                </a>
+                <div class="nav-title">
+                    <i class="fas fa-file-alt"></i>
+                    <h1>Document Converter</h1>
+                </div>
+                <a href="../index.html" class="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Dashboard
+                </a>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="tool-header">
+                <h2>Smart Document Converter</h2>
+                <p>Convert between document formats with preserved formatting • Word, PDF, HTML, Markdown and more</p>
+            </div>
+
+            <div class="upload-section content-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-content">
+                        <i class="fas fa-file-alt"></i>
+                        <h3>Drop your documents here or click to browse</h3>
+                        <p>Supports Word, PDF, TXT, HTML, Markdown • Max 25MB per file</p>
+                        <input type="file" id="fileInput" accept=".doc,.docx,.pdf,.txt,.html,.htm,.md,.rtf" multiple>
+                        <button class="browse-btn">
+                            <i class="fas fa-folder-open"></i> Browse Files
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls-section content-section" id="controlsSection" style="display: none;">
+                <div class="control-group">
+                    <h3><i class="fas fa-cogs"></i> Conversion Settings</h3>
+                    <div class="controls-grid">
+                        <div class="control-item">
+                            <label for="outputFormat">Output Format:</label>
+                            <select id="outputFormat">
+                                <option value="pdf">PDF Document</option>
+                                <option value="docx">Word Document (.docx)</option>
+                                <option value="html">HTML Web Page</option>
+                                <option value="md">Markdown</option>
+                                <option value="txt">Plain Text</option>
+                                <option value="rtf">Rich Text Format</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="compressionLevel">Output Quality:</label>
+                            <select id="compressionLevel">
+                                <option value="high">High Quality</option>
+                                <option value="medium" selected>Balanced</option>
+                                <option value="low">Smaller Size</option>
+                            </select>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="preserveFormatting">
+                                <input type="checkbox" id="preserveFormatting" checked> Preserve Formatting
+                            </label>
+                        </div>
+                        
+                        <div class="control-item">
+                            <label for="includeImages">
+                                <input type="checkbox" id="includeImages" checked> Include Images
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn primary" id="convertBtn">
+                            <i class="fas fa-exchange-alt"></i> Convert Documents
+                        </button>
+                        <button class="btn secondary" id="downloadAllBtn" style="display: none;">
+                            <i class="fas fa-download"></i> Download All
+                        </button>
+                        <button class="btn secondary" id="clearBtn">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section content-section" id="resultsSection" style="display: none;">
+                <h3><i class="fas fa-check-circle"></i> Conversion Results</h3>
+                <div class="results-grid" id="resultsGrid"></div>
+            </div>
+
+            <div class="tips-section content-section">
+                <h3><i class="fas fa-lightbulb"></i> Conversion Tips</h3>
+                <div class="tips-grid">
+                    <div class="tip-card">
+                        <i class="fas fa-file-word"></i>
+                        <h4>Word Documents</h4>
+                        <p>Best format for preserving complex formatting, tables, and embedded objects.</p>
+                    </div>
+                    <div class="tip-card">
+                        <i class="fas fa-file-pdf"></i>
+                        <h4>PDF Output</h4>
+                        <p>Perfect for sharing and printing. Maintains exact layout across all devices.</p>
+                    </div>
+                    <div class="tip-card">
+                        <i class="fas fa-code"></i>
+                        <h4>HTML & Markdown</h4>
+                        <p>Great for web publishing and documentation. Lightweight and accessible.</p>
+                    </div>
+                    <div class="tip-card">
+                        <i class="fas fa-file-alt"></i>
+                        <h4>Text Formats</h4>
+                        <p>Plain text and RTF are universal formats supported by all text editors.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p>Converting documents...</p>
+        </div>
+    </div>
+
+    <!-- External libraries for document conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/turndown/7.1.2/turndown.min.js"></script>
+    <script src="../scripts/document-converter.js"></script>
+</body>
+</html>
