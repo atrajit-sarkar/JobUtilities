@@ -132,16 +132,24 @@ class PDFCompressor {
         try {
             for (let i = 0; i < this.files.length; i++) {
                 const file = this.files[i];
-                const compressedFile = await this.compressPDF(file);
-                const originalSize = file.size;
-                const compressedSize = compressedFile.size;
-                const savingsPct = Math.max(0, ((originalSize - compressedSize) / originalSize) * 100).toFixed(1);
+                let compressedFile = await this.compressPDF(file);
+                if (!compressedFile) compressedFile = file;
+                const originalSize = file.size || 0;
+                let compressedSize = (compressedFile && compressedFile.size) ? compressedFile.size : 0;
+                // If compression didn't reduce size, keep original
+                if (compressedSize >= originalSize) {
+                    compressedFile = file;
+                    compressedSize = originalSize;
+                }
+                const savingsPct = originalSize > 0
+                    ? Math.max(0, ((originalSize - compressedSize) / originalSize) * 100)
+                    : 0;
                 this.compressedFiles.push({
                     original: file,
                     compressed: compressedFile,
                     originalSize,
                     compressedSize,
-                    savings: savingsPct
+                    savings: savingsPct.toFixed(1)
                 });
             }
 
@@ -321,13 +329,13 @@ class PDFCompressor {
                     <div class="stat-label">Saved</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">${this.formatFileSize(result.originalSize - result.compressedSize)}</div>
+                    <div class="stat-value">${this.formatFileSize(Math.max(0, result.originalSize - result.compressedSize))}</div>
                     <div class="stat-label">Reduced</div>
                 </div>
             </div>
             
             <div class="compression-bar">
-                <div class="compression-fill" style="width: ${result.savings}%"></div>
+                <div class="compression-fill" style="width: ${Math.min(100, Math.max(0, parseFloat(result.savings) || 0))}%"></div>
             </div>
             
             <button class="download-btn" onclick="pdfCompressor.downloadSingle(${index})">
@@ -339,7 +347,7 @@ class PDFCompressor {
     }
 
     formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
+        if (!bytes || bytes <= 0) return '0 Bytes';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));

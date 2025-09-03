@@ -69,6 +69,13 @@ class ImageCompressor {
         this.compressBtn.addEventListener('click', () => this.compressImages());
         this.downloadAllBtn.addEventListener('click', () => this.downloadAll());
         this.clearBtn.addEventListener('click', () => this.clearAll());
+
+        // Show PNG tip when applicable
+        const formatSelect = this.format;
+        if (formatSelect) {
+            const maybeShowPngTip = () => this.updatePngTip();
+            formatSelect.addEventListener('change', maybeShowPngTip);
+        }
     }
 
     handleFiles(fileList) {
@@ -86,6 +93,7 @@ class ImageCompressor {
         this.files = [...this.files, ...newFiles];
         this.showControls();
         this.updateUploadArea();
+    this.updatePngTip();
     }
 
     updateUploadArea() {
@@ -120,19 +128,39 @@ class ImageCompressor {
             return;
         }
 
+        // If PNGs are present and output is Keep Original or PNG, warn user
+        const hasPNG = this.files.some(f => /\.png$/i.test(f.name) || f.type === 'image/png');
+        const outFmt = this.format.value;
+        if (hasPNG && (outFmt === 'auto' || outFmt === 'png')) {
+            const proceed = confirm('PNG images often do not compress well as PNG. For best size reduction, choose JPEG or WebP.\n\nDo you want to continue with the current format?');
+            if (!proceed) return;
+        }
+
         this.showLoading(true);
         this.compressedFiles = [];
 
         try {
             for (let i = 0; i < this.files.length; i++) {
                 const file = this.files[i];
-                const compressedFile = await this.compressImage(file);
+                let compressedFile = await this.compressImage(file);
+                // Fallback to original if compression failed to produce a blob
+                if (!compressedFile) compressedFile = file;
+                const originalSize = file.size || 0;
+                let compressedSize = (compressedFile && compressedFile.size) ? compressedFile.size : 0;
+                // If compression didn't help (or made it bigger), keep original
+                if (compressedSize >= originalSize) {
+                    compressedFile = file;
+                    compressedSize = originalSize;
+                }
+                const savingsPct = originalSize > 0
+                    ? Math.max(0, ((originalSize - compressedSize) / originalSize) * 100)
+                    : 0;
                 this.compressedFiles.push({
                     original: file,
                     compressed: compressedFile,
-                    originalSize: file.size,
-                    compressedSize: compressedFile.size,
-                    savings: ((file.size - compressedFile.size) / file.size * 100).toFixed(1)
+                    originalSize,
+                    compressedSize,
+                    savings: savingsPct.toFixed(1)
                 });
             }
 
@@ -144,6 +172,17 @@ class ImageCompressor {
         } finally {
             this.showLoading(false);
         }
+    }
+
+    updatePngTip() {
+        try {
+            const tip = document.getElementById('pngTip');
+            if (!tip) return;
+            const hasPNG = this.files && this.files.some(f => /\.png$/i.test(f.name) || f.type === 'image/png');
+            const outFmt = this.format ? this.format.value : 'auto';
+            const show = !!hasPNG && (outFmt === 'auto' || outFmt === 'png');
+            tip.style.display = show ? 'block' : 'none';
+        } catch (_) { /* no-op */ }
     }
 
     async compressImage(file) {
@@ -246,13 +285,13 @@ class ImageCompressor {
                     <div class="stat-label">Saved</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">${this.formatFileSize(result.originalSize - result.compressedSize)}</div>
+                    <div class="stat-value">${this.formatFileSize(Math.max(0, result.originalSize - result.compressedSize))}</div>
                     <div class="stat-label">Reduced</div>
                 </div>
             </div>
             
             <div class="compression-bar">
-                <div class="compression-fill" style="width: ${result.savings}%"></div>
+                <div class="compression-fill" style="width: ${Math.min(100, Math.max(0, parseFloat(result.savings) || 0))}%"></div>
             </div>
             
             <button class="download-btn" onclick="compressor.downloadSingle(${index})">
@@ -264,7 +303,7 @@ class ImageCompressor {
     }
 
     formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
+        if (!bytes || bytes <= 0) return '0 Bytes';
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB'];
         const i = Math.floor(Math.log(bytes) / Math.log(k));
