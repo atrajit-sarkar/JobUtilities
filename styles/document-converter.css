@@ -187,6 +187,80 @@
 	box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
+/* Controls section: professional form styling */
+.controls-section .control-group {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 16px;
+	padding: 28px;
+}
+
+.controls-section .control-group h3 {
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: #2d3748;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 20px;
+}
+
+.controls-section .control-group h3 i {
+	background: linear-gradient(45deg, #667eea, #764ba2);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+}
+
+.controls-section .controls-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 18px 22px;
+	margin-bottom: 18px;
+}
+
+.controls-section .control-item label {
+	display: block;
+	font-weight: 600;
+	color: #374151;
+	margin-bottom: 8px;
+}
+
+.controls-section .control-item select {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1.5px solid #e2e8f0;
+	border-radius: 10px;
+	background: #fff;
+	color: #2d3748;
+	font-size: 0.98rem;
+	transition: all 0.2s ease;
+}
+
+.controls-section .control-item select:focus {
+	outline: none;
+	border-color: #667eea;
+	box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+.controls-section .control-item input[type="checkbox"] {
+	accent-color: #667eea;
+	transform: scale(1.15);
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+.controls-section .action-buttons {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+	margin-top: 6px;
+}
+
+.controls-section .action-buttons .btn {
+	min-width: 180px;
+}
+
 .results-section h3 {
 	color: #2d3748;
 	font-size: 1.5rem;
@@ -383,6 +457,8 @@
 	.upload-area { padding: 40px 15px; }
 	.tips-grid { grid-template-columns: 1fr; }
 	.result-header { flex-direction: column; text-align: center; gap: 10px; }
+	.controls-section .controls-grid { grid-template-columns: 1fr; }
+	.controls-section .action-buttons .btn { width: 100%; }
 }
 
 @media (max-width: 480px) {
