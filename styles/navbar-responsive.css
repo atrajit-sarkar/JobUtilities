@@ -1,0 +1,38 @@
+/* Responsive navbar adjustments */
+@media (max-width: 768px) {
+    .nav-content {
+        padding: 12px 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .nav-title {
+        order: 3;
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+    }
+    
+    .nav-title h1 {
+        font-size: 1.5rem;
+    }
+    
+    .nav-logo .logo-text,
+    .back-btn span:not(.fa) {
+        display: none;
+    }
+    
+    .main-content {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .nav-content {
+        padding: 10px 15px;
+    }
+    
+    .nav-title h1 {
+        font-size: 1.25rem;
+    }
+}
