@@ -3,6 +3,12 @@ class Dashboard {
     constructor() {
         this.initializeAnimations();
         this.bindEvents();
+        this.setupContributionNotice();
+    }
+
+    setupContributionNotice() {
+        // Banner should appear on every page load
+        // No localStorage check needed - user requested it to appear on reload
     }
 
     initializeAnimations() {
@@ -183,6 +189,28 @@ function searchUtilities(query) {
         
         card.style.display = isMatch ? 'block' : 'none';
     });
+}
+
+// Contribution notice functions
+function scrollToContribution() {
+    const opensourceSection = document.querySelector('.opensource-section');
+    if (opensourceSection) {
+        opensourceSection.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+function closeNotice() {
+    const banner = document.querySelector('.contribution-notice-banner');
+    if (banner) {
+        banner.style.animation = 'slideUp 0.5s ease-out forwards';
+        setTimeout(() => {
+            banner.style.display = 'none';
+            // Notice will reappear on page reload as requested
+        }, 500);
+    }
 }
 
 // Export for potential module use

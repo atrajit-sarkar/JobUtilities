@@ -15,6 +15,23 @@
 </head>
 <body>
     <div class="container">
+        <!-- Active Contribution Notice -->
+        <div class="contribution-notice-banner">
+            <div class="notice-content">
+                <div class="notice-text">
+                    <i class="fab fa-github"></i>
+                    <span>🚀 <strong>Open Source Project!</strong> We welcome contributors to improve our tools, especially the Document Converter.</span>
+                </div>
+                <button class="notice-btn" onclick="scrollToContribution()">
+                    <i class="fas fa-arrow-down"></i>
+                    Contribute Now
+                </button>
+            </div>
+            <button class="notice-close" onclick="closeNotice()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
         <header class="header">
             <div class="logo">
                 <i class="fas fa-tools"></i>
@@ -213,6 +230,142 @@
                     <div class="stat-info">
                         <h3>Responsive</h3>
                         <p>All Devices</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Open Source & Contribution Section -->
+            <div class="opensource-section" id="opensource-section">
+                <div class="section-header">
+                    <h2><i class="fab fa-github"></i> Open Source Project</h2>
+                    <p>Join our community of contributors and help make JobUtilities even better!</p>
+                </div>
+                
+                <div class="contribution-grid">
+                    <div class="opensource-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fab fa-github"></i>
+                            </div>
+                            <div class="card-title">
+                                <h3>Contribute to JobUtilities</h3>
+                                <span class="badge">Open Source</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <p>JobUtilities is completely open-source! We welcome developers of all skill levels to contribute and improve our tools.</p>
+                            <a href="https://github.com/atrajit-sarkar/JobUtilities.git" target="_blank" class="github-btn">
+                                <i class="fab fa-github"></i>
+                                <span>View on GitHub</span>
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="guidelines-card">
+                        <div class="card-header">
+                            <div class="card-icon">
+                                <i class="fas fa-bullhorn"></i>
+                            </div>
+                            <div class="card-title">
+                                <h3>Contribution Guidelines</h3>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="priority-section">
+                                <div class="priority-badge">
+                                    <i class="fas fa-star"></i>
+                                    <span>Priority Project</span>
+                                </div>
+                                <h4>Document Converter Enhancement</h4>
+                                <p>Help us improve conversion accuracy, add new formats, and optimize performance!</p>
+                            </div>
+                            
+                            <div class="guidelines-grid">
+                                <div class="guideline-item">
+                                    <i class="fas fa-browser"></i>
+                                    <div>
+                                        <strong>Client-side Only</strong>
+                                        <span>No server processing</span>
+                                    </div>
+                                </div>
+                                <div class="guideline-item">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <div>
+                                        <strong>Privacy First</strong>
+                                        <span>Browser-only processing</span>
+                                    </div>
+                                </div>
+                                <div class="guideline-item">
+                                    <i class="fas fa-mobile-alt"></i>
+                                    <div>
+                                        <strong>Mobile Ready</strong>
+                                        <span>Responsive design required</span>
+                                    </div>
+                                </div>
+                                <div class="guideline-item">
+                                    <i class="fas fa-palette"></i>
+                                    <div>
+                                        <strong>Consistent Design</strong>
+                                        <span>Follow UI patterns</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contribution-areas">
+                    <h3>Areas for Contribution</h3>
+                    <div class="areas-grid">
+                        <div class="area-card priority">
+                            <div class="area-icon">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <h4>Document Converter</h4>
+                            <p>Enhance format support and conversion accuracy</p>
+                            <span class="area-badge high">High Priority</span>
+                        </div>
+                        <div class="area-card">
+                            <div class="area-icon">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <h4>New Tools</h4>
+                            <p>Create additional productivity utilities</p>
+                            <span class="area-badge medium">Medium</span>
+                        </div>
+                        <div class="area-card">
+                            <div class="area-icon">
+                                <i class="fas fa-paint-brush"></i>
+                            </div>
+                            <h4>UI/UX Improvements</h4>
+                            <p>Enhance user experience and interface design</p>
+                            <span class="area-badge medium">Medium</span>
+                        </div>
+                        <div class="area-card">
+                            <div class="area-icon">
+                                <i class="fas fa-bug"></i>
+                            </div>
+                            <h4>Bug Fixes</h4>
+                            <p>Identify and resolve issues</p>
+                            <span class="area-badge low">Low</span>
+                        </div>
+                        <div class="area-card">
+                            <div class="area-icon">
+                                <i class="fas fa-book"></i>
+                            </div>
+                            <h4>Documentation</h4>
+                            <p>Improve guides and code documentation</p>
+                            <span class="area-badge low">Low</span>
+                        </div>
+                        <div class="area-card">
+                            <div class="area-icon">
+                                <i class="fas fa-rocket"></i>
+                            </div>
+                            <h4>Performance</h4>
+                            <p>Optimize speed and efficiency</p>
+                            <span class="area-badge medium">Medium</span>
+                        </div>
                     </div>
                 </div>
             </div>
